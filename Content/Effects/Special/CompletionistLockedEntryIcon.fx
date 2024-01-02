@@ -55,12 +55,15 @@ float4 MainPS(VertexShaderOutput input) : COLOR
             color.a = OutlineOpacity;
 		}
     }
-
+	else
+	{
+        // grayscaled content
+        const float grayscale = (color.r + color.g + color.b) / 3;
+        color.rgb = float3(grayscale, grayscale, grayscale);
+	}
+    
 	// apply mask pattern
 	color.a *= mask;
-
-	// uncomment to test
-	//color.rgba += float4(1,0,0,0.5);
 		
 	// premultiply alpha
 	color.rgb *= color.a;
