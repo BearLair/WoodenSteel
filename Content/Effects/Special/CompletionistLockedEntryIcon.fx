@@ -7,8 +7,8 @@ Texture2DArray MaskTexture : register(t1);
 int MaskTextureArraySlice;
 
 // partially based on https://www.reddit.com/r/godot/comments/84fhuh/2d_Outline_shader_finally_got_it_working/
-const float OutlineSize = 0.05;
-const float3 OutlineColor = float3(0, 0, 0);
+const float OutlineSize = 0.02;
+const float OutlineGrey = 0.0;
 const float OutlineOpacity = 0.7;
 
 sampler SpriteTextureSampler
@@ -38,8 +38,10 @@ float4 MainPS(VertexShaderOutput input) : COLOR
 	color.rgb /= color.a;
 
 	const float threshold = 0.9;
-
-	if (color.a <= threshold)
+    
+    float grayscale = (color.r + color.g + color.b) * 0.06 + 0.1;
+	
+    if (color.a <= threshold)
     {
         if (   SpriteTexture.Sample(SpriteTextureSampler, float3(uv.x,                uv.y + OutlineSize, SpriteTextureArraySlice)).a > threshold
             || SpriteTexture.Sample(SpriteTextureSampler, float3(uv.x,                uv.y - OutlineSize, SpriteTextureArraySlice)).a > threshold
@@ -51,16 +53,11 @@ float4 MainPS(VertexShaderOutput input) : COLOR
             || SpriteTexture.Sample(SpriteTextureSampler, float3(uv.x + OutlineSize,  uv.y - OutlineSize, SpriteTextureArraySlice)).a > threshold)
 		{
 			// outer colored border
-            color.rgb = OutlineColor;
+            grayscale = OutlineGrey;
             color.a = OutlineOpacity;
 		}
     }
-	else
-	{
-        // grayscaled content
-        const float grayscale = (color.r + color.g + color.b) / 3;
-        color.rgb = float3(grayscale, grayscale, grayscale);
-	}
+    color.rgb = float3(grayscale, grayscale, grayscale);
     
 	// apply mask pattern
 	color.a *= mask;
